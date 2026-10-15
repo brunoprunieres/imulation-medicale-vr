@@ -1,0 +1,256 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulation médicale VR</title>
+
+  <!-- A-Frame : moteur 3D et WebXR -->
+  <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    #info {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      z-index: 10;
+      max-width: 500px;
+      padding: 12px;
+      background: rgba(15, 35, 50, 0.94);
+      color: white;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+
+    #info strong { color: #72e6c1; }
+  </style>
+</head>
+
+<body>
+<div id="info">
+  <strong>SIMULATION MÉDICALE VR</strong><br>
+  Prototype pédagogique — données fictives.<br>
+  Sur ordinateur : clique sur les objets.<br>
+  Sur Quest 2 : vise avec la manette et appuie sur la gâchette.
+  <div id="message">Mission : identifier le patient simulé.</div>
+  <div id="score">Étapes validées : 0 / 4</div>
+</div>
+
+<a-scene
+  background="color: #dce9ef"
+  renderer="antialias: true"
+  vr-mode-ui="enabled: true">
+
+  <!-- Éclairage -->
+  <a-light type="ambient" intensity="0.85"></a-light>
+  <a-light type="directional"
+           position="-3 6 4"
+           intensity="1"></a-light>
+
+  <!-- Sol et murs -->
+  <a-plane rotation="-90 0 0"
+           width="12" height="12"
+           color="#b8c9ce"></a-plane>
+
+  <a-box position="0 1.5 -4"
+         width="12" height="3"
+         depth="0.15"
+         color="#edf4f6"></a-box>
+
+  <a-box position="-5.9 1.5 0"
+         width="0.15" height="3"
+         depth="8"
+         color="#d5e2e7"></a-box>
+
+  <!-- Lit médical -->
+  <a-box position="0 0.55 -1.4"
+         width="2" height="0.2"
+         depth="3"
+         color="#ffffff"></a-box>
+
+  <a-box position="0 0.35 -1.4"
+         width="2.1" height="0.2"
+         depth="3.1"
+         color="#647987"></a-box>
+
+  <!-- Patient stylisé -->
+  <a-sphere position="0 1.0 -2.25"
+            radius="0.25"
+            color="#d5aa8c"></a-sphere>
+
+  <a-box position="0 0.85 -1.55"
+         width="0.65" height="0.35"
+         depth="0.8"
+         color="#4d8eac"></a-box>
+
+  <a-box position="-0.45 0.85 -1.5"
+         width="0.18" height="0.15"
+         depth="0.8"
+         color="#d5aa8c"
+         rotation="0 0 -10"></a-box>
+
+  <a-box position="0.45 0.85 -1.5"
+         width="0.18" height="0.15"
+         depth="0.8"
+         color="#d5aa8c"
+         rotation="0 0 10"></a-box>
+
+  <!-- Fiche patient interactive -->
+  <a-box id="fiche"
+         class="interactif"
+         position="-1.7 1.3 -0.5"
+         width="0.6" height="0.8"
+         depth="0.08"
+         color="#f5d991">
+    <a-text value="FICHE\nPATIENT"
+            color="#263746"
+            align="center"
+            width="1.2"
+            position="0 0 0.06"></a-text>
+  </a-box>
+
+  <!-- Moniteur interactif -->
+  <a-entity id="moniteur"
+            class="interactif"
+            position="1.5 1.4 -1.5">
+    <a-box width="0.9" height="0.7"
+           depth="0.12" color="#263b46"></a-box>
+    <a-box position="0 0 0.07"
+           width="0.76" height="0.55"
+           depth="0.02" color="#b9f0d8"></a-box>
+    <a-text value="MONITEUR"
+            color="#18382f"
+            align="center"
+            width="1.2"
+            position="0 0.12 0.09"></a-text>
+    <a-text value="Cliquer"
+            color="#18382f"
+            align="center"
+            width="1.2"
+            position="0 -0.12 0.09"></a-text>
+  </a-entity>
+
+  <!-- Hygiène des mains -->
+  <a-box id="hygiene"
+         class="interactif"
+         position="-2 1 0.6"
+         width="0.4" height="0.6"
+         depth="0.3"
+         color="#69bdc8">
+    <a-text value="HYGIENE\nDES MAINS"
+            color="#123a43"
+            align="center"
+            width="1.2"
+            position="0 0 0.17"></a-text>
+  </a-box>
+
+  <!-- Synthèse finale -->
+  <a-box id="synthese"
+         class="interactif"
+         position="2 1.1 0.5"
+         width="0.7" height="0.45"
+         depth="0.1"
+         color="#edc776">
+    <a-text value="SYNTHESE"
+            color="#44351c"
+            align="center"
+            width="1.3"
+            position="0 0 0.07"></a-text>
+  </a-box>
+
+  <!-- Tableau de consignes -->
+  <a-plane position="0 2.2 -3.85"
+           width="3.5" height="1.3"
+           color="#193d4c"></a-plane>
+
+  <a-text value="CENTRE DE SIMULATION"
+          position="-1.55 2.65 -3.78"
+          width="3"
+          color="#ffffff"></a-text>
+
+  <a-text value="Sélectionne les objets pour progresser."
+          position="-1.55 2.3 -3.78"
+          width="3"
+          color="#b8f5df"></a-text>
+
+  <!-- Caméra et curseur souris -->
+  <a-entity position="0 0 0">
+    <a-camera position="0 1.6 4">
+      <a-cursor
+        raycaster="objects: .interactif"
+        fuse="false"
+        color="#ffcc55">
+      </a-cursor>
+    </a-camera>
+  </a-entity>
+
+  <!-- Lasers des manettes VR -->
+  <a-entity laser-controls="hand: right"
+            raycaster="objects: .interactif; far: 8"></a-entity>
+
+  <a-entity laser-controls="hand: left"
+            raycaster="objects: .interactif; far: 8"></a-entity>
+
+</a-scene>
+
+<script>
+  const message = document.getElementById("message");
+  const score = document.getElementById("score");
+
+  const etapes = new Set();
+
+  function valider(id, texte) {
+    if (etapes.has(id)) return;
+
+    etapes.add(id);
+    message.textContent = texte;
+    score.textContent =
+      "Étapes validées : " + etapes.size + " / 4";
+
+    if (etapes.size === 4) {
+      message.textContent =
+        "Simulation terminée ! Consulte le bilan avec ton formateur.";
+    }
+  }
+
+  document.getElementById("fiche")
+    .addEventListener("click", () => {
+      valider("fiche",
+        "Patient fictif identifié. Observe le moniteur.");
+    });
+
+  document.getElementById("moniteur")
+    .addEventListener("click", () => {
+      valider("moniteur",
+        "Constantes fictives : FC 88/min, SpO₂ 97 %, TA 118/76 mmHg, FR 16/min.");
+      alert(
+        "MONITEUR — DONNÉES FICTIVES\n\n" +
+        "Fréquence cardiaque : 88/min\n" +
+        "SpO₂ : 97 %\n" +
+        "Tension artérielle : 118/76 mmHg\n" +
+        "Fréquence respiratoire : 16/min\n\n" +
+        "Valeurs de démonstration uniquement."
+      );
+    });
+
+  document.getElementById("hygiene")
+    .addEventListener("click", () => {
+      valider("hygiene",
+        "Étape pédagogique enregistrée. Prépare la synthèse.");
+    });
+
+  document.getElementById("synthese")
+    .addEventListener("click", () => {
+      valider("synthese",
+        "Fin de séance. Discute des étapes avec ton formateur.");
+    });
+</script>
+</body>
+</html>
