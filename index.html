@@ -1,383 +1,231 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulation médicale VR</title>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parcours VR — Formation en échoscopie</title>
   <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
-
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
+    html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    #help {
+      position: fixed; z-index: 20; top: 12px; left: 12px;
+      max-width: 380px; padding: 10px 14px; border-radius: 9px;
+      background: rgba(15, 40, 52, .92); color: #fff; font-size: 14px;
     }
-    #notice {
-      position: fixed;
-      z-index: 10;
-      top: 10px;
-      left: 10px;
-      padding: 10px 14px;
-      background: #12352f;
-      color: white;
-      border-radius: 8px;
-      font-size: 14px;
+    #help strong { display:block; margin-bottom: 4px; }
+    #status {
+      position: fixed; z-index: 20; bottom: 12px; left: 50%;
+      transform: translateX(-50%); max-width: 90vw; text-align: center;
+      padding: 9px 14px; border-radius: 8px;
+      background: rgba(255,255,255,.94); color: #17313e; font-size: 14px;
     }
+    .hidden { display: none !important; }
   </style>
 </head>
-
 <body>
-  <div id="notice">
-    Simulation fictive — pointez un objet et appuyez sur la gâchette.
+  <div id="help">
+    <strong>Parcours de formation VR</strong>
+    Dans le casque, pointez un objet avec le rayon d'une manette et appuyez sur la gâchette.
+    Sur ordinateur, utilisez la souris.
   </div>
+  <div id="status">Couloir : sélectionnez l'icône Information près de la porte.</div>
 
   <a-scene
-    background="color: #DCEAF2"
-    renderer="colorManagement: true"
-    webxr="optionalFeatures: hand-tracking"
+    background="color: #cbd9df"
+    renderer="colorManagement: true; antialias: true"
+    vr-mode-ui="enabled: true"
+    webxr="optionalFeatures: local-floor, bounded-floor"
   >
-    <!-- Lumière et environnement -->
+    <a-assets>
+      <a-mixin id="clickableStyle"
+        animation__mouseenter="property: scale; to: 1.08 1.08 1.08; startEvents: mouseenter; dur: 120"
+        animation__mouseleave="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 120">
+      </a-mixin>
+    </a-assets>
+
+    <!-- Eclairage global -->
     <a-entity light="type: ambient; intensity: 1.1"></a-entity>
-    <a-entity
-      light="type: directional; intensity: 1.5"
-      position="-2 5 3"
-    ></a-entity>
+    <a-entity light="type: directional; intensity: 1.0" position="-3 7 4"></a-entity>
 
-    <a-plane
-      rotation="-90 0 0"
-      width="10"
-      height="10"
-      color="#D6E2E8"
-    ></a-plane>
+    <!-- Couloir : sol, plafond, murs -->
+    <a-entity id="corridor">
+      <a-plane position="0 0 0" rotation="-90 0 0" width="6" height="18" color="#dfe5e8"></a-plane>
+      <a-plane position="0 3.2 -2" width="6" height="6" color="#f2f5f6"></a-plane>
+      <a-plane position="-3 1.6 -2" rotation="0 90 0" width="18" height="3.2" color="#e9eef0"></a-plane>
+      <a-plane position="3 1.6 -2" rotation="0 -90 0" width="18" height="3.2" color="#e9eef0"></a-plane>
+      <a-plane position="0 3.2 -2" rotation="90 0 0" width="6" height="18" color="#f8fafb"></a-plane>
 
-    <a-box
-      position="0 2.5 -4.8"
-      width="10"
-      height="5"
-      depth="0.1"
-      color="#F4F7F9"
-    ></a-box>
+      <!-- Lignes de plinthe -->
+      <a-box position="-2.94 0.12 -2" width="0.08" height="0.24" depth="18" color="#bdcbd1"></a-box>
+      <a-box position="2.94 0.12 -2" width="0.08" height="0.24" depth="18" color="#bdcbd1"></a-box>
 
-    <!-- Panneau d'instructions -->
-    <a-plane
-      position="0 2.8 -3.9"
-      width="3.5"
-      height="0.9"
-      color="#173D56"
-    ></a-plane>
+      <!-- Eclairage de plafond -->
+      <a-box position="0 3.08 -1.4" width="1.5" height="0.06" depth="0.45" color="#ffffff"></a-box>
+      <a-box position="0 3.08 -5.0" width="1.5" height="0.06" depth="0.45" color="#ffffff"></a-box>
 
-    <a-text
-      value="SIMULATION MEDICALE"
-      position="0 3.02 -3.85"
-      align="center"
-      width="3.2"
-      color="#FFFFFF"
-    ></a-text>
+      <!-- Porte au fond du couloir -->
+      <a-box position="0 1.35 -8.7" width="1.65" height="2.7" depth="0.14" color="#b7c5cb"></a-box>
+      <a-box position="0 1.35 -8.60" width="1.43" height="2.52" depth="0.04" color="#7896a5"></a-box>
+      <a-box position="0.52 1.25 -8.55" width="0.055" height="0.22" depth="0.06" color="#e5c36c"></a-box>
+      <a-box position="0 2.85 -8.65" width="2.25" height="0.42" depth="0.08" color="#17485b"></a-box>
+      <a-text value="SALLE DE SIMULATION" position="0 2.85 -8.59" align="center" baseline="center" width="2.4" color="#ffffff"></a-text>
 
-    <a-text
-      id="progress"
-      value="Etapes : 0 / 4"
-      position="0 2.72 -3.85"
-      align="center"
-      width="3"
-      color="#B9F4DC"
-    ></a-text>
+      <!-- Panneau mural fixe -->
+      <a-box position="-1.65 1.7 -8.55" width="1.05" height="1.15" depth="0.08" color="#ffffff"></a-box>
+      <a-box position="-1.65 1.7 -8.49" width="0.9" height="1.0" depth="0.03" color="#d7e9ed"></a-box>
+      <a-text value="FORMATION\nECHOSCOPIE\nABDOMINALE" position="-1.65 1.85 -8.45" align="center" width="1.1" color="#17485b"></a-text>
 
-    <a-plane
-      position="0 2.05 -3.9"
-      width="3.8"
-      height="0.65"
-      color="#FFFFFF"
-    ></a-plane>
+      <!-- Icône d'information interactive -->
+      <a-entity id="infoIcon" class="clickable" mixin="clickableStyle" position="-1.25 1.35 -7.5" role="button" tabindex="0">
+        <a-cylinder radius="0.32" height="0.10" rotation="90 0 0" color="#176b87"></a-cylinder>
+        <a-sphere id="infoHit" class="clickable" radius="0.28" position="0 0.04 0" color="#167fa0"></a-sphere>
+        <a-text value="i" position="0 0.05 0.285" align="center" baseline="center" width="1.2" color="#ffffff"></a-text>
+        <a-text value="INFORMATIONS" position="0 0.52 0" align="center" width="2.2" color="#123d4d"></a-text>
+      </a-entity>
 
-    <a-text
-      id="message"
-      value="Pointez le patient, le moniteur, l'hygiene ou la synthese."
-      position="0 2.05 -3.85"
-      align="center"
-      baseline="center"
-      width="3.5"
-      color="#173D56"
-      wrap-count="43"
-    ></a-text>
-
-    <!-- Lit du patient -->
-    <a-box
-      position="-1.35 0.75 -2.45"
-      width="2.1"
-      height="0.22"
-      depth="1.15"
-      color="#FFFFFF"
-    ></a-box>
-
-    <a-box
-      position="-1.35 0.48 -2.45"
-      width="1.8"
-      height="0.35"
-      depth="0.9"
-      color="#91A9B8"
-    ></a-box>
-
-    <!-- Patient : jambes -->
-    <a-cylinder
-      position="-1.65 0.95 -2.15"
-      radius="0.12"
-      height="0.65"
-      color="#D5A17C"
-      rotation="0 0 90"
-    ></a-cylinder>
-
-    <a-cylinder
-      position="-1.65 0.95 -2.65"
-      radius="0.12"
-      height="0.65"
-      color="#D5A17C"
-      rotation="0 0 90"
-    ></a-cylinder>
-
-    <!-- Corps du patient : OBJET CLIQUABLE -->
-    <a-box
-      id="patient"
-      class="clickable"
-      data-action="patient"
-      data-base-color="#4B91B8"
-      position="-1.05 1.22 -2.45"
-      width="0.85"
-      height="0.4"
-      depth="0.65"
-      color="#4B91B8"
-    ></a-box>
-
-    <!-- Tête du patient -->
-    <a-sphere
-      position="-0.45 1.3 -2.45"
-      radius="0.22"
-      color="#D5A17C"
-    ></a-sphere>
-
-    <a-text
-      value="PATIENT"
-      position="-1.25 1.85 -2.45"
-      align="center"
-      width="2"
-      color="#173D56"
-    ></a-text>
-
-    <!-- Moniteur -->
-    <a-box
-      position="1.45 1.35 -2.6"
-      width="0.85"
-      height="0.75"
-      depth="0.15"
-      color="#344955"
-    ></a-box>
-
-    <!-- Ecran cliquable -->
-    <a-box
-      id="moniteur"
-      class="clickable"
-      data-action="moniteur"
-      data-base-color="#173D56"
-      position="1.45 1.38 -2.5"
-      width="0.68"
-      height="0.52"
-      depth="0.025"
-      color="#173D56"
-    ></a-box>
-
-    <a-text
-      value="FC  78"
-      position="1.45 1.49 -2.47"
-      align="center"
-      width="1.3"
-      color="#55FFAA"
-    ></a-text>
-
-    <a-text
-      value="SpO2  98%"
-      position="1.45 1.3 -2.47"
-      align="center"
-      width="1.3"
-      color="#55FFAA"
-    ></a-text>
-
-    <a-text
-      value="MONITEUR"
-      position="1.45 1.95 -2.6"
-      align="center"
-      width="2"
-      color="#173D56"
-    ></a-text>
-
-    <!-- Poste d'hygiene -->
-    <a-box
-      position="-2.65 0.8 -1.1"
-      width="0.8"
-      height="0.9"
-      depth="0.5"
-      color="#D9E4EA"
-    ></a-box>
-
-    <a-box
-      id="hygiene"
-      class="clickable"
-      data-action="hygiene"
-      data-base-color="#27A6A1"
-      position="-2.65 1.0 -0.82"
-      width="0.58"
-      height="0.48"
-      depth="0.06"
-      color="#27A6A1"
-    ></a-box>
-
-    <a-text
-      value="HYGIENE"
-      position="-2.65 1.65 -1.1"
-      align="center"
-      width="2"
-      color="#173D56"
-    ></a-text>
-
-    <a-text
-      value="Cliquer"
-      position="-2.65 1.0 -0.77"
-      align="center"
-      width="1.5"
-      color="#FFFFFF"
-    ></a-text>
-
-    <!-- Poste de synthese -->
-    <a-box
-      position="2.55 0.8 -1.1"
-      width="0.9"
-      height="0.9"
-      depth="0.5"
-      color="#D9E4EA"
-    ></a-box>
-
-    <a-box
-      id="synthese"
-      class="clickable"
-      data-action="synthese"
-      data-base-color="#D9A441"
-      position="2.55 1.0 -0.82"
-      width="0.65"
-      height="0.48"
-      depth="0.06"
-      color="#D9A441"
-    ></a-box>
-
-    <a-text
-      value="SYNTHESE"
-      position="2.55 1.65 -1.1"
-      align="center"
-      width="2"
-      color="#173D56"
-    ></a-text>
-
-    <a-text
-      value="Cliquer"
-      position="2.55 1.0 -0.77"
-      align="center"
-      width="1.5"
-      color="#FFFFFF"
-    ></a-text>
-
-    <!-- Camera et clic souris sur ordinateur -->
-    <a-entity position="0 1.6 2.5">
-      <a-camera look-controls="pointerLockEnabled: false">
-        <a-entity
-          cursor="rayOrigin: mouse"
-          raycaster="objects: .clickable; far: 10"
-        ></a-entity>
-      </a-camera>
+      <!-- Icône d'entrée, cachée jusqu'à validation -->
+      <a-entity id="enterIcon" class="clickable hidden" visible="false" mixin="clickableStyle" position="0 0.75 -6.9" role="button" tabindex="0">
+        <a-cylinder radius="0.42" height="0.12" rotation="90 0 0" color="#25834a"></a-cylinder>
+        <a-sphere id="enterHit" class="clickable" radius="0.36" position="0 0.05 0" color="#31a85e"></a-sphere>
+        <a-text value="➜" position="0 0.06 0.365" align="center" baseline="center" width="1.3" color="#ffffff"></a-text>
+        <a-text value="ENTRER" position="0 0.58 0" align="center" width="1.8" color="#176235"></a-text>
+      </a-entity>
     </a-entity>
 
-    <!-- Controleur droit -->
-    <a-entity
-      laser-controls="hand: right"
-      raycaster="objects: .clickable; far: 10"
-      line="color: #00FFFF; opacity: 0.9"
-    ></a-entity>
+    <!-- Panneau d'information 3D, visible après clic -->
+    <a-entity id="infoPanel" visible="false" position="1.25 1.55 -5.2">
+      <a-plane width="2.25" height="2.75" color="#ffffff" material="shader: flat; side: double"></a-plane>
+      <a-plane position="0 1.18 0.012" width="2.25" height="0.38" color="#17485b"></a-plane>
+      <a-text value="AVANT DE COMMENCER" position="0 1.18 0.025" align="center" baseline="center" width="2.0" color="#ffffff"></a-text>
+      <a-text
+        id="infoText"
+        value="Votre Login afin de vous connecter au simulateur vous a été transmis par mail, il est personnel.\n\nPour accéder au cursus : Display all (en haut à droite) → Customised courses → Echoscopie abdominale.\n\nVeillez à suivre les modules d'exercices dans l'ordre.\n\nSherifa est votre aide technique si besoin, bug ou questions.\n\nMerci de ranger les sondes factices et le simulateur à la fin de votre séance.\n\nBonne séance !"
+        position="-0.98 0.82 0.025"
+        align="left"
+        baseline="top"
+        width="1.9"
+        wrap-count="34"
+        color="#183642"
+      ></a-text>
+      <a-entity id="readButton" class="clickable" mixin="clickableStyle" position="0 -1.02 0.05" role="button" tabindex="0">
+        <a-plane id="readHit" class="clickable" width="1.82" height="0.38" color="#168052" material="shader: flat; side: double"></a-plane>
+        <a-text value="J'ai lu, continuer" position="0 0 0.012" align="center" baseline="center" width="2.1" color="#ffffff"></a-text>
+      </a-entity>
+    </a-entity>
 
-    <!-- Controleur gauche -->
-    <a-entity
-      laser-controls="hand: left"
-      raycaster="objects: .clickable; far: 10"
-      line="color: #00FFFF; opacity: 0.9"
-    ></a-entity>
+    <!-- Salle de soins : cachée au départ -->
+    <a-entity id="careRoom" visible="false">
+      <a-plane position="0 0 -16" rotation="-90 0 0" width="8" height="8" color="#dfe5e8"></a-plane>
+      <a-plane position="0 1.6 -20" width="8" height="3.2" color="#f2f5f6"></a-plane>
+      <a-plane position="-4 1.6 -16" rotation="0 90 0" width="8" height="3.2" color="#e9eef0"></a-plane>
+      <a-plane position="4 1.6 -16" rotation="0 -90 0" width="8" height="3.2" color="#e9eef0"></a-plane>
+      <a-plane position="0 3.2 -16" rotation="90 0 0" width="8" height="8" color="#f8fafb"></a-plane>
 
+      <a-box position="0 0.8 -17.3" width="2.3" height="0.18" depth="1.0" color="#ffffff"></a-box>
+      <a-box position="0 0.5 -17.3" width="2.0" height="0.38" depth="0.8" color="#91a9b8"></a-box>
+      <a-cylinder position="-0.5 1.1 -17.3" radius="0.18" height="0.25" rotation="90 0 0" color="#d5a17c"></a-cylinder>
+      <a-box position="1.8 1.15 -17.5" width="0.85" height="0.8" depth="0.16" color="#344955"></a-box>
+      <a-box position="1.8 1.18 -17.39" width="0.68" height="0.52" depth="0.03" color="#173d56"></a-box>
+      <a-text value="SALLE DE SOINS" position="0 2.55 -19.8" align="center" width="4" color="#17485b"></a-text>
+      <a-text value="Espace de préparation et de simulation" position="0 2.15 -19.78" align="center" width="3.8" color="#34515e"></a-text>
+
+      <a-entity id="backIcon" class="clickable" mixin="clickableStyle" position="0 0.8 -13.4" role="button" tabindex="0">
+        <a-cylinder radius="0.36" height="0.12" rotation="90 0 0" color="#176b87"></a-cylinder>
+        <a-sphere id="backHit" class="clickable" radius="0.30" position="0 0.05 0" color="#167fa0"></a-sphere>
+        <a-text value="↩" position="0 0.06 0.30" align="center" baseline="center" width="1.2" color="#ffffff"></a-text>
+        <a-text value="RETOUR AU COULOIR" position="0 0.52 0" align="center" width="2.5" color="#123d4d"></a-text>
+      </a-entity>
+    </a-entity>
+
+    <!-- Camera : point de départ reculé dans le couloir -->
+    <a-entity id="rig" position="0 0 0">
+      <a-camera id="camera" position="0 1.65 0" look-controls="pointerLockEnabled: false">
+        <a-entity
+          cursor="rayOrigin: mouse; fuse: false"
+          raycaster="objects: .clickable; far: 12"
+        ></a-entity>
+      </a-camera>
+      <a-entity
+        id="rightController"
+        laser-controls="hand: right"
+        raycaster="objects: .clickable; far: 12; interval: 50"
+        line="color: #00d8ff; opacity: 0.9"
+      ></a-entity>
+      <a-entity
+        id="leftController"
+        laser-controls="hand: left"
+        raycaster="objects: .clickable; far: 12; interval: 50"
+        line="color: #00d8ff; opacity: 0.9"
+      ></a-entity>
+    </a-entity>
   </a-scene>
 
   <script>
-    const scene = document.querySelector("a-scene");
+    const infoIcon = document.querySelector("#infoIcon");
+    const infoPanel = document.querySelector("#infoPanel");
+    const readButton = document.querySelector("#readButton");
+    const enterIcon = document.querySelector("#enterIcon");
+    const corridor = document.querySelector("#corridor");
+    const careRoom = document.querySelector("#careRoom");
+    const backIcon = document.querySelector("#backIcon");
+    const rig = document.querySelector("#rig");
+    const status = document.querySelector("#status");
 
-    function initialiserInteractions() {
-      const message = document.querySelector("#message");
-      const progress = document.querySelector("#progress");
+    let hasReadInfo = false;
+    let inCareRoom = false;
 
-      const etapes = {
-        patient: {
-          titre: "Patient",
-          texte: "Patient selectionne. Simulation fictive : observez la scene."
-        },
-        moniteur: {
-          titre: "Moniteur",
-          texte: "Moniteur ouvert. Valeurs fictives : FC 78, SpO2 98 %."
-        },
-        hygiene: {
-          titre: "Hygiene",
-          texte: "Poste d'hygiene selectionne. Suivez le protocole enseigne."
-        },
-        synthese: {
-          titre: "Synthese",
-          texte: "Synthese ouverte. Revisez les observations de la simulation."
-        }
-      };
+    function showStatus(text) {
+      status.textContent = text;
+    }
 
-      const realisees = new Set();
+    function showInfo() {
+      infoPanel.setAttribute("visible", true);
+      showStatus("Lisez les consignes sur le panneau, puis sélectionnez « J'ai lu, continuer ».");
+    }
 
-      document.querySelectorAll(".clickable").forEach((objet) => {
-        // Curseur ou rayon sur l'objet
-        objet.addEventListener("mouseenter", () => {
-          objet.setAttribute("scale", "1.08 1.08 1.08");
-        });
+    function validateInfo() {
+      hasReadInfo = true;
+      infoPanel.setAttribute("visible", false);
+      enterIcon.classList.remove("hidden");
+      enterIcon.setAttribute("visible", true);
+      showStatus("Merci ! L'entrée est débloquée. Sélectionnez l'icône verte devant la porte.");
+    }
 
-        objet.addEventListener("mouseleave", () => {
-          objet.setAttribute("scale", "1 1 1");
-        });
+    function enterCareRoom() {
+      if (!hasReadInfo) return;
+      inCareRoom = true;
+      corridor.setAttribute("visible", false);
+      careRoom.setAttribute("visible", true);
+      // Déplace le rig dans la salle suivante et oriente le regard vers son centre.
+      rig.setAttribute("position", "0 0 -11.8");
+      document.querySelector("#camera").setAttribute("rotation", "0 0 0");
+      infoPanel.setAttribute("visible", false);
+      showStatus("Vous êtes dans la salle de soins. Sélectionnez Retour au couloir pour revenir.");
+    }
 
-        // Declenchement par clic ou gachette VR
-        objet.addEventListener("click", () => {
-          const action = objet.getAttribute("data-action");
-          const etape = etapes[action];
+    function returnToCorridor() {
+      inCareRoom = false;
+      careRoom.setAttribute("visible", false);
+      corridor.setAttribute("visible", true);
+      rig.setAttribute("position", "0 0 0");
+      document.querySelector("#camera").setAttribute("rotation", "0 0 0");
+      showStatus("Couloir : sélectionnez l'icône verte pour entrer dans la salle de soins.");
+    }
 
-          if (!etape) return;
+    document.querySelector("#infoHit").addEventListener("click", showInfo);
+    document.querySelector("#readHit").addEventListener("click", validateInfo);
+    document.querySelector("#enterHit").addEventListener("click", enterCareRoom);
+    document.querySelector("#backHit").addEventListener("click", returnToCorridor);
 
-          message.setAttribute("value", etape.texte);
-
-          if (!realisees.has(action)) {
-            realisees.add(action);
-            progress.setAttribute(
-              "value",
-              "Etapes : " + realisees.size + " / 4"
-            );
-          }
-
-          objet.setAttribute("material", "emissive", "#164B3A");
-          console.log("Objet selectionne :", etape.titre);
-        });
+    // Garde un feedback visuel lors du survol par le rayon ou la souris.
+    document.querySelectorAll(".clickable").forEach((obj) => {
+      obj.addEventListener("mouseenter", () => {
+        obj.setAttribute("scale", "1.06 1.06 1.06");
       });
-
-      console.log("Interactions medicales initialisees.");
-    }
-
-    if (scene.hasLoaded) {
-      initialiserInteractions();
-    } else {
-      scene.addEventListener("loaded", initialiserInteractions);
-    }
+      obj.addEventListener("mouseleave", () => {
+        obj.setAttribute("scale", "1 1 1");
+      });
+    });
   </script>
 </body>
 </html>
